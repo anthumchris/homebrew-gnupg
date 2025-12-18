@@ -22,11 +22,16 @@ jobs:
       - name: Uninstall Ubuntu gnupg package
         # This avoids conflicts and test failures with Homebrew gnupg Formulae
         if: startsWith(matrix.os, 'ubuntu')
-        run:
-          which gpgconf || true;
-          gpgconf --kill all || true;
-          sudo apt remove -y "gnupg*" || true;
-          which gpgconf || true
+        run: |
+          sudo apt-get remove -y "gpgconf" || true;
+          gpgconf 2>/dev/null && {
+            echo "Error: System's pre-installed gpg still exists" >&2
+            dpkg-query -l "gpg*" "gnupg*"
+            exit 1
+          } || true
+
+        # sudo apt-get remove -y "gnupg*" || true;
+        # sudo apt-get remove -y "gpg*" || true;
 
       - name: Set up Homebrew
         id: set-up-homebrew
