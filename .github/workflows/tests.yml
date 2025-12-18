@@ -22,7 +22,11 @@ jobs:
       - name: Uninstall Ubuntu gnupg package
         # This avoids conflicts and test failures with Homebrew gnupg Formulae
         if: startsWith(matrix.os, 'ubuntu')
-        run: sudo apt remove -y "gnupg*"
+        run:
+          which gpgconf || true;
+          gpgconf --kill all || true;
+          sudo apt remove -y "gnupg*" || true;
+          which gpgconf || true
 
       - name: Set up Homebrew
         id: set-up-homebrew
