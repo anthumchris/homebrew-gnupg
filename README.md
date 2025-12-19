@@ -1,4 +1,6 @@
-# GNU Privacy Guard (OpenPGP)
+# homebrew-tap
+
+My [Homebrew](https://brew.sh/) tap for installing various formulae that are not officially provided by Homebrew
 
 ## How do I install these formulae?
 
