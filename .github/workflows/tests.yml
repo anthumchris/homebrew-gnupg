@@ -11,7 +11,10 @@ jobs:
     strategy:
       matrix:
         # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
-        os: [ ubuntu-22.04, macos-14, macos-15-intel, macos-26 ]
+        os: [
+          macos-14, macos-15-intel, macos-26,
+          ubuntu-22.04, ubuntu-24.04, ubuntu-22.04-arm, ubuntu-24.04-arm
+        ]
     runs-on: ${{ matrix.os }}
     permissions:
       actions: read
@@ -19,18 +22,6 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - name: Uninstall Ubuntu gnupg packages
-        # This step prevents test failures for Homebrew gnupg@2.5 by removing system's gnupg packages
-        # Homebrew tests run non-privileged and are unable to kill system's root gnupg processes
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          sudo apt-get remove -y "gpgconf" || true;
-          gpgconf 2>/dev/null && {
-            dpkg-query -l "gpg*" "gnupg*"
-            echo "Error: System's pre-installed gpg still exists" >&2
-            exit 1
-          } || true
-
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
@@ -45,6 +36,24 @@ jobs:
           restore-keys: ${{ matrix.os }}-rubygems-
 
       - run: brew test-bot --only-cleanup-before
+
+      - name: Uninstall Ubuntu gnupg packages
+        # Avoids test failures from conflicts system's gnupg for Homebrew gnupg@2.5
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get remove -y "gpgconf" || true;
+          gpgconf 2>/dev/null && {
+            dpkg-query -l "gpg*" "gnupg*"
+            echo "Error: System's pre-installed gpg still exists" >&2
+            exit 1
+          } || true
+
+      - name: Fix Ubuntu file privs
+        # Fixes permission errors on ubuntu-*-arm
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.os, '04-arm')
+        run: |
+          sudo chown -R runner:runner "$(brew --repository)"
+          sudo chmod -R o-w "$(brew --repository)"
 
       - run: brew test-bot --only-setup
 
