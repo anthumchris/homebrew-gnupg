@@ -8,6 +8,11 @@ class GnupgAT25 < Formula
   # update during testing to force bottle/binary builds from this diff
   #   nonce = 4
 
+  livecheck do
+    url "https://gnupg.org/ftp/gcrypt/gnupg/"
+    regex(/href=.*?gnupg[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
+  end
+
   bottle do
     root_url "https://github.com/anthumchris/homebrew-tap/releases/download/gnupg@2.5-2.5.16"
     sha256 arm64_tahoe:  "be2da4ea7bea6124a9f700cea1872e17817ffcad89212cceba62dce134df39b9"
